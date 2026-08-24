@@ -112,3 +112,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# CSRF Security Settings for Vercel
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
+]
