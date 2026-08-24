@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}CaloriePulse{% endblock %}</title>
 
+    <!-- Browser Tab Logo (Favicon) -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%23f97316'/><path fill='%23ffffff' d='M12 21c-4.41 0-8-3.18-8-7.1 0-3.64 2.88-6.69 6.22-8.22C10.22 7.33 11.11 8.66 11.11 10.43c0 1.33.44 2.66 2.22 3.11.44-1.33 1.33-2.66 3.11-3.55 1.33 2.22 1.78 4.88.89 6.66-.44.89-1.33 1.78-2.66 2.22C13.78 19.67 12.89 21 12 21z'/></svg>"
+    />
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -22,11 +29,7 @@
 
     <!-- Main Content Area -->
     <main class="container mx-auto px-4 py-8 flex-grow">
-      {% block content %}
-      <!--  -->
-
-      <!--  -->
-      {% endblock content %}
+      {% block content %} {% endblock content %}
     </main>
 
     <!-- Separate Footer File Included -->
