@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}Dashboard - CaloriePulse{% endblock %}
+<!--  -->
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 py-6 px-4">
+  <!-- TOP HEADER & WELCOME BAR -->
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl backdrop-blur-xl"
+  >
+    <div>
+      <h1
+        class="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2"
+      >
+        Welcome back,
+        <span
+          class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+          >{{ user.username }}</span
+        >
+        👋
+      </h1>
+      <p class="text-slate-400 text-sm mt-1">
+        Track your daily calorie progress and nutrition goals here.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div
+        class="px-4 py-2 bg-slate-950 border border-slate-800 rounded-2xl text-center"
+      >
+        <span class="text-xs text-slate-500 block uppercase font-bold"
+          >Today's Date</span
+        >
+        <span class="text-sm text-cyan-400 font-bold">{% now "N j, Y" %}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TARGET BMR CARDS -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Maintenance BMR -->
+    <div
+      class="bg-slate-900/70 border border-slate-800 hover:border-cyan-500/40 p-6 rounded-3xl transition-all shadow-xl"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider"
+          >Maintenance Target</span
+        >
+        <i class="fa-solid fa-scale-balanced text-cyan-400"></i>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">
+        {{ bmr }}
+        <span class="text-sm font-normal text-slate-400">kcal/day</span>
+      </h2>
+      <p class="text-xs text-slate-500 mt-2">
+        Target calorie to keep current weight stable.
+      </p>
+    </div>
+
+    <!-- Weight Loss -->
+    <div
+      class="bg-slate-900/70 border border-slate-800 hover:border-emerald-500/40 p-6 rounded-3xl transition-all shadow-xl"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <span
+          class="text-xs font-bold text-emerald-400 uppercase tracking-wider"
+          >Weight Loss (-0.5 kg/wk)</span
+        >
+        <i class="fa-solid fa-arrow-trend-down text-emerald-400"></i>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">
+        {{ weight_loss }}
+        <span class="text-sm font-normal text-slate-400">kcal/day</span>
+      </h2>
+      <p class="text-xs text-slate-500 mt-2">
+        Recommended daily intake for fat loss.
+      </p>
+    </div>
+
+    <!-- Weight Gain -->
+    <div
+      class="bg-slate-900/70 border border-slate-800 hover:border-amber-500/40 p-6 rounded-3xl transition-all shadow-xl"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider"
+          >Weight Gain (+0.5 kg/wk)</span
+        >
+        <i class="fa-solid fa-arrow-trend-up text-amber-400"></i>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">
+        {{ weight_gain }}
+        <span class="text-sm font-normal text-slate-400">kcal/day</span>
+      </h2>
+      <p class="text-xs text-slate-500 mt-2">
+        Target calorie for muscle & weight gain.
+      </p>
+    </div>
+  </div>
+
+  <!-- PROGRESS BAR & WATER TRACKER SECTION -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Calorie Progress -->
+    <div
+      class="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 sm:p-8 rounded-3xl backdrop-blur-xl"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-white">Daily Calorie Progress</h3>
+          <p class="text-xs text-slate-400">
+            Consumed
+            <span class="text-cyan-400 font-bold"
+              >{{ total_calories }} kcal</span
+            >
+            of {{ bmr }} kcal
+          </p>
+        </div>
+        <span class="text-2xl font-black text-cyan-400"
+          >{{ progress_percentage }}%</span
+        >
+      </div>
+
+      <!-- Progress Bar Track -->
+      <div
+        class="w-full h-4 bg-slate-950 rounded-full border border-slate-800 overflow-hidden p-0.5"
+      >
+        <div
+          class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
+          style="width: {{ progress_percentage }}%;"
+        ></div>
+      </div>
+
+      {% if total_calories > bmr %}
+      <p
+        class="text-xs text-rose-400 font-semibold mt-3 flex items-center gap-1.5"
+      >
+        <i class="fa-solid fa-triangle-exclamation"></i> Notice: You have
+        exceeded your daily maintenance calorie target!
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- Interactive Water Intake Tracker -->
+    <div
+      class="bg-slate-900/80 border border-slate-800 p-6 rounded-3xl backdrop-blur-xl flex flex-col justify-between"
+    >
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-glass-water text-blue-400"></i> Water Intake
+        </h3>
+        <span id="water-count" class="text-xl font-bold text-blue-400"
+          >0 / 8 Glasses</span
+        >
+      </div>
+
+      <div
+        class="flex items-center justify-center gap-2 my-4"
+        id="water-glasses"
+      >
+        <!-- JS rendered glasses -->
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          onclick="addWater()"
+          class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all"
+        >
+          + Add Glass
+        </button>
+        <button
+          onclick="removeWater()"
+          class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition-all"
+        >
+          -
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD FOOD ITEM FORM -->
+  <div
+    class="bg-slate-900/80 border border-slate-800 p-6 sm:p-8 rounded-3xl backdrop-blur-xl"
+  >
+    <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-4">
+      <i class="fa-solid fa-circle-plus text-cyan-400"></i> Add New Food Item
+    </h3>
+    <form method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 mb-1.5"
+          >Food Name</label
+        >
+        <input
+          type="text"
+          name="item_name"
+          placeholder="e.g. Rice, Chicken, Oats"
+          required
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 mb-1.5"
+          >Calories (kcal)</label
+        >
+        <input
+          type="number"
+          name="calorie_consumed"
+          placeholder="e.g. 250"
+          min="1"
+          required
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+      <div class="flex items-end">
+        <button
+          type="submit"
+          class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-plus"></i> Add Item
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TODAY'S FOOD LOG & LOGGING TABLE -->
+  <div
+    class="bg-slate-900/80 border border-slate-800 p-6 sm:p-8 rounded-3xl backdrop-blur-xl"
+  >
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-6"
+    >
+      <div>
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-utensils text-cyan-400"></i> Today's Food Log
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">
+          Items added today will automatically calculate into your calorie goal.
+        </p>
+      </div>
+    </div>
+
+    <!-- Food Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr
+            class="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider"
+          >
+            <th class="py-3 px-4">Food Item</th>
+            <th class="py-3 px-4">Calories</th>
+            <th class="py-3 px-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-sm">
+          {% for food in today_items %}
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-semibold text-slate-200">
+              {{ food.item_name }}
+            </td>
+            <td class="py-3.5 px-4 font-bold text-cyan-400">
+              {{ food.calorie_consumed }} kcal
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <a
+                href="{% url 'delete_food' food.id %}"
+                class="px-3 py-1.5 text-xs font-semibold text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 rounded-xl transition-all inline-flex items-center gap-1"
+              >
+                <i class="fa-solid fa-trash-can"></i> Delete
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center py-8 text-slate-500 text-sm">
+              <i class="fa-solid fa-plate-wheat text-3xl mb-2 block"></i>
+              No food logged for today yet. Use the form above to add your food!
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Water Tracker Script -->
+<script>
+  let currentGlasses = localStorage.getItem("waterCount")
+    ? parseInt(localStorage.getItem("waterCount"))
+    : 0;
+
+  function updateWaterUI() {
+    const countElem = document.getElementById("water-count");
+    const container = document.getElementById("water-glasses");
+    countElem.innerText = `${currentGlasses} / 8 Glasses`;
+
+    let html = "";
+    for (let i = 1; i <= 8; i++) {
+      if (i <= currentGlasses) {
+        html += `<i class="fa-solid fa-glass-water text-blue-400 text-lg"></i>`;
+      } else {
+        html += `<i class="fa-solid fa-glass-water text-slate-700 text-lg"></i>`;
+      }
+    }
+    container.innerHTML = html;
+    localStorage.setItem("waterCount", currentGlasses);
+  }
+
+  function addWater() {
+    if (currentGlasses < 8) {
+      currentGlasses++;
+      updateWaterUI();
+    }
+  }
+
+  function removeWater() {
+    if (currentGlasses > 0) {
+      currentGlasses--;
+      updateWaterUI();
+    }
+  }
+
+  updateWaterUI();
+</script>
+{% endblock %}

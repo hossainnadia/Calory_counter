@@ -1,0 +1,513 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}CaloriePulse - Smart Health & Calorie Tracker{% endblock %}
+<!--  -->
+{% block content %}
+<div class="space-y-16 py-8">
+  <!-- 0. SEARCH RESULTS SECTION (Appears when user searches in navbar) -->
+  {% if query %}
+  <section class="max-w-5xl mx-auto px-4">
+    <div
+      class="bg-slate-900/90 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl"
+    >
+      <div
+        class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4"
+      >
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-magnifying-glass text-cyan-400"></i>
+          Search Results for <span class="text-cyan-400">"{{ query }}"</span>
+        </h2>
+        <a
+          href="{% url 'home' %}"
+          class="text-xs text-slate-400 hover:text-white bg-slate-800 px-3 py-1.5 rounded-xl transition-all"
+          >Clear Search</a
+        >
+      </div>
+
+      {% if search_results %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {% for item in search_results %}
+        <div
+          class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between"
+        >
+          <div>
+            <h4 class="font-bold text-white text-sm sm:text-base">
+              {{ item.item_name }}
+            </h4>
+            <p class="text-xs text-cyan-400 font-semibold mt-0.5">
+              {{ item.calorie_consumed }} kcal
+            </p>
+          </div>
+
+          <form action="{% url 'add_food_from_api' %}" method="POST">
+            {% csrf_token %}
+            <input
+              type="hidden"
+              name="item_name"
+              value="{{ item.item_name }}"
+            />
+            <input
+              type="hidden"
+              name="calorie_consumed"
+              value="{{ item.calorie_consumed }}"
+            />
+            <button
+              type="submit"
+              class="px-3 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-solid fa-plus"></i> Add to Log
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-6 text-slate-400">
+        <i class="fa-solid fa-bowl-rice text-3xl text-slate-600 mb-2 block"></i>
+        <p class="text-sm">No food items found for "{{ query }}".</p>
+        <span class="text-xs text-slate-500 mt-1 block"
+          >Try searching in English (e.g. 1 apple, 2 eggs, 100g chicken
+          breast)</span
+        >
+      </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- 1. HERO SECTION -->
+  <section class="relative text-center max-w-5xl mx-auto px-4 pt-4">
+    <span
+      class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-6"
+    >
+      <i class="fa-solid fa-sparkles text-amber-400"></i> Next-Gen Fitness &
+      Nutrition Tracker
+    </span>
+
+    <h1
+      class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight"
+    >
+      Take Control of Your Health with <br class="hidden sm:inline" />
+      <span
+        class="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 bg-clip-text text-transparent"
+      >
+        Precision Tracking
+      </span>
+    </h1>
+
+    <p
+      class="text-slate-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+    >
+      Effortlessly track calories, monitor your BMR & BMI, set personalized
+      goals, and optimize your daily lifestyle.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      {% if not user.is_authenticated %}
+      <a
+        href="{% url 'register' %}"
+        class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+      >
+        <i class="fa-solid fa-rocket"></i> Get Started Free
+      </a>
+      <a
+        href="#calculator"
+        class="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-700 transition-all flex items-center justify-center gap-2"
+      >
+        <i class="fa-solid fa-calculator"></i> Quick Calculator
+      </a>
+      {% else %}
+      <a
+        href="{% url 'dashboard' %}"
+        class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+      >
+        <i class="fa-solid fa-gauge-high"></i> Open Your Dashboard
+      </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- 2. STATS COUNTER BAR -->
+  <section class="max-w-6xl mx-auto px-4">
+    <div
+      class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-slate-900/60 border border-slate-800 rounded-2xl backdrop-blur-xl text-center"
+    >
+      <div class="p-4">
+        <h3 class="text-3xl font-extrabold text-cyan-400 mb-1">10k+</h3>
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+          Active Users
+        </p>
+      </div>
+      <div class="p-4">
+        <h3 class="text-3xl font-extrabold text-blue-400 mb-1">500k+</h3>
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+          Meals Tracked
+        </p>
+      </div>
+      <div class="p-4">
+        <h3 class="text-3xl font-extrabold text-emerald-400 mb-1">99.8%</h3>
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+          Calculation Accuracy
+        </p>
+      </div>
+      <div class="p-4">
+        <h3 class="text-3xl font-extrabold text-amber-400 mb-1">4.9★</h3>
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+          User Satisfaction
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. INTERACTIVE INSTANT HEALTH CALCULATOR -->
+  <section id="calculator" class="max-w-4xl mx-auto px-4">
+    <div
+      class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl"
+    >
+      <div class="text-center mb-8">
+        <span class="text-cyan-400 text-xs font-bold uppercase tracking-wider"
+          >Instant Tool</span
+        >
+        <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+          Free BMR, BMI & Water Calculator
+        </h2>
+        <p class="text-slate-400 text-sm mt-1">
+          Calculate your metrics without signing up
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-2"
+            >Age (years)</label
+          >
+          <input
+            type="number"
+            id="calc-age"
+            value="25"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-2"
+            >Gender</label
+          >
+          <select
+            id="calc-gender"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500"
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-2"
+            >Height (cm)</label
+          >
+          <input
+            type="number"
+            id="calc-height"
+            value="170"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-2"
+            >Weight (kg)</label
+          >
+          <input
+            type="number"
+            id="calc-weight"
+            value="70"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+      </div>
+
+      <button
+        onclick="runCalculator()"
+        class="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg transition-all"
+      >
+        Calculate Results
+      </button>
+
+      <!-- Calculator Output Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+        <div
+          class="bg-slate-950/70 border border-slate-800 p-4 rounded-2xl text-center"
+        >
+          <span class="text-xs text-slate-500 font-medium block mb-1"
+            >BMI SCORE</span
+          >
+          <p id="calc-bmi" class="text-2xl font-black text-cyan-400">24.22</p>
+          <span
+            id="calc-status"
+            class="text-xs text-emerald-400 font-semibold block mt-1"
+            >Normal Weight</span
+          >
+        </div>
+        <div
+          class="bg-slate-950/70 border border-slate-800 p-4 rounded-2xl text-center"
+        >
+          <span class="text-xs text-slate-500 font-medium block mb-1"
+            >DAILY BMR</span
+          >
+          <p id="calc-bmr" class="text-2xl font-black text-amber-400">
+            1711 kcal
+          </p>
+          <span class="text-xs text-slate-400 block mt-1"
+            >Basal Metabolic Energy</span
+          >
+        </div>
+        <div
+          class="bg-slate-950/70 border border-slate-800 p-4 rounded-2xl text-center"
+        >
+          <span class="text-xs text-slate-500 font-medium block mb-1"
+            >WATER INTAKE</span
+          >
+          <p id="calc-water" class="text-2xl font-black text-blue-400">
+            2.45 L
+          </p>
+          <span class="text-xs text-slate-400 block mt-1"
+            >Recommended daily</span
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. HOW IT WORKS -->
+  <section class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <span class="text-cyan-400 text-xs font-bold uppercase tracking-wider"
+        >Simple Process</span
+      >
+      <h2 class="text-3xl font-bold text-white mt-1">How CaloriePulse Works</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div
+        class="bg-slate-900/50 border border-slate-800 p-8 rounded-2xl text-center relative hover:border-slate-700 transition-all"
+      >
+        <div
+          class="w-14 h-14 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6"
+        >
+          1
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Set Your Profile</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Enter your age, gender, height, and weight to automatically calculate
+          your body metrics.
+        </p>
+      </div>
+
+      <div
+        class="bg-slate-900/50 border border-slate-800 p-8 rounded-2xl text-center relative hover:border-slate-700 transition-all"
+      >
+        <div
+          class="w-14 h-14 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6"
+        >
+          2
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Log Daily Foods</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Add meals and calories eaten throughout the day to track your progress
+          live.
+        </p>
+      </div>
+
+      <div
+        class="bg-slate-900/50 border border-slate-800 p-8 rounded-2xl text-center relative hover:border-slate-700 transition-all"
+      >
+        <div
+          class="w-14 h-14 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6"
+        >
+          3
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Achieve Fitness Goals</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Follow your Weight Loss, Maintenance, or Gain targets with visual
+          progress bars.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. FEATURES / SERVICES SECTION -->
+  <section class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <span class="text-cyan-400 text-xs font-bold uppercase tracking-wider"
+        >Why Choose Us</span
+      >
+      <h2 class="text-3xl font-bold text-white mt-1">
+        Smart Features for Healthy Living
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl hover:border-cyan-500/50 transition-all"
+      >
+        <div
+          class="w-12 h-12 bg-cyan-500/10 text-cyan-400 rounded-xl flex items-center justify-center text-xl mb-4"
+        >
+          <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">
+          BMR & BMI Calculation
+        </h3>
+        <p class="text-slate-400 text-sm">
+          Uses medically approved formulas to evaluate your exact daily energy
+          consumption requirements.
+        </p>
+      </div>
+
+      <div
+        class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl hover:border-cyan-500/50 transition-all"
+      >
+        <div
+          class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center text-xl mb-4"
+        >
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">
+          Customized Goal Targets
+        </h3>
+        <p class="text-slate-400 text-sm">
+          Get precise calorie limits for weight loss (-0.5kg/week), weight
+          maintenance, or muscle gain.
+        </p>
+      </div>
+
+      <div
+        class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl hover:border-cyan-500/50 transition-all"
+      >
+        <div
+          class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center text-xl mb-4"
+        >
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">
+          Live Progress Tracking
+        </h3>
+        <p class="text-slate-400 text-sm">
+          Visual progress indicators keep you aware of how close you are to
+          reaching your target limit.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. USER REVIEWS / TESTIMONIALS -->
+  <section class="max-w-6xl mx-auto px-4 pb-12">
+    <div class="text-center mb-12">
+      <span class="text-cyan-400 text-xs font-bold uppercase tracking-wider"
+        >Testimonials</span
+      >
+      <h2 class="text-3xl font-bold text-white mt-1">What Our Users Say</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div class="flex items-center gap-1 text-amber-400 mb-3 text-sm">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+          ><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+          ><i class="fa-solid fa-star"></i>
+        </div>
+        <p class="text-slate-300 text-sm italic mb-4">
+          "CaloriePulse made tracking my food intake so effortless. I lost 4 kg
+          in a month by following its weight loss calorie target!"
+        </p>
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center font-bold text-white text-sm"
+          >
+            SR
+          </div>
+          <div>
+            <h4 class="text-white text-sm font-semibold">Sabbir Rahman</h4>
+            <span class="text-xs text-slate-500">Fitness Enthusiast</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div class="flex items-center gap-1 text-amber-400 mb-3 text-sm">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+          ><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+          ><i class="fa-solid fa-star"></i>
+        </div>
+        <p class="text-slate-300 text-sm italic mb-4">
+          "The instant BMR and Water intake calculators on the home page are
+          super handy. Clean design and very fast!"
+        </p>
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center font-bold text-white text-sm"
+          >
+            NS
+          </div>
+          <div>
+            <h4 class="text-white text-sm font-semibold">Nusrat Sharmin</h4>
+            <span class="text-xs text-slate-500">Verified User</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- JavaScript for Interactive Calculator -->
+<script>
+  function runCalculator() {
+    const age = intVal(document.getElementById("calc-age").value);
+    const gender = document.getElementById("calc-gender").value;
+    const height = floatVal(document.getElementById("calc-height").value);
+    const weight = floatVal(document.getElementById("calc-weight").value);
+
+    if (!height || !weight || !age) return;
+
+    // BMI Calculation
+    const heightM = height / 100;
+    const bmi = weight / (heightM * heightM);
+    document.getElementById("calc-bmi").innerText = bmi.toFixed(2);
+
+    let status = "Normal Weight";
+    let color = "text-emerald-400";
+    if (bmi < 18.5) {
+      status = "Underweight";
+      color = "text-amber-400";
+    } else if (bmi >= 25 && bmi < 29.9) {
+      status = "Overweight";
+      color = "text-orange-400";
+    } else if (bmi >= 30) {
+      status = "Obese";
+      color = "text-rose-400";
+    }
+
+    const statusElem = document.getElementById("calc-status");
+    statusElem.innerText = status;
+    statusElem.className = `text-xs font-semibold block mt-1 ${color}`;
+
+    // BMR Calculation (Harris-Benedict)
+    let bmr = 0;
+    if (gender === "male") {
+      bmr = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
+    } else {
+      bmr = 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
+    }
+    document.getElementById("calc-bmr").innerText = `${Math.round(bmr)} kcal`;
+
+    // Daily Water Intake Calculation (35ml per kg)
+    const waterLiters = (weight * 0.035).toFixed(2);
+    document.getElementById("calc-water").innerText = `${waterLiters} L`;
+  }
+
+  function intVal(val) {
+    return parseInt(val) || 0;
+  }
+  function floatVal(val) {
+    return parseFloat(val) || 0;
+  }
+</script>
+{% endblock %}
