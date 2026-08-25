@@ -8,8 +8,10 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
-    path('delete-food/<int:item_id>/', views.delete_food_view, name='delete_food'), # Delete Line
+    
+    # Food Management Routes
     path('add-food/<int:food_id>/', views.add_food_from_search, name='add_food_from_search'),
-    path('delete-food/<int:item_id>/', views.delete_food_view, name='delete_food'),
     path('add-api-food/', views.add_food_from_api, name='add_food_from_api'),
+    path('delete-food/<int:item_id>/', views.delete_food_view, name='delete_food'),
+path('save-calculator/', views.save_calculator_view, name='save_calculator'),
 ]
